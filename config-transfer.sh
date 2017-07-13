@@ -122,7 +122,7 @@ handle-all-apps() {
     info "Skipping application list export"
   fi
 
-  parse-source-applications #TODO What if no apps found in source-applications?
+  parse-source-applications
 }
 
 export-all-source-applications() {
@@ -140,12 +140,10 @@ parse-source-applications() {
     fatal "$APPS_XML_FILE is a blank/empty file"
   fi
 
+  info "Parsing applicaiton names from $APPS_XML_FILE"
+
   appNames=($(grep '<name' "$APPS_XML_FILE" | cut -f2 -d">" | cut -f1 -d"<"))
   info "Found ${#appNames[@]} apps: ${appNames[@]}"
-
-  if [[ -z "${appNames// }" ]]; then
-    fatal "Found zero application names in $APPS_XML_FILE"
-  fi
 
   for appName in "${appNames[@]}"
   do
