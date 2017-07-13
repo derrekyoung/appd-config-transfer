@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-source ./private-credentials.sh
+source ./credentials.sh
 
 #/ Usage:
 #/ Description:
