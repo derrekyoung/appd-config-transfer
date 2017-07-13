@@ -6,12 +6,12 @@ Bash script to transfer configurations between Controllers. You can export and i
 ## Important
 The configurations get transferred based on the Application name. This Application must exist in *both* Controllers. It's best to have the agents reporting to the destination Controller, but it might be possible to create the Application manually in the Controller UI without having the agents reporting first. However, certain Health Rules might fail to upload if they rely on BTs that have not yet been registered.
 
-### Permissions
+#### Permissions
 ```
 chmod u+x config-transfer.sh
 ```
 
-### Update credentials.sh
+#### Update Your credentials.sh
 This file stores all of your Controller access credentials. Update the various fields as appropriate for your Controllers. FYI, many on premises Controllers simply have 'customer1' as the account name.
 
 ```
@@ -39,24 +39,33 @@ What kind of configuration do you want to transfer? You can choose individual co
 Do you want to export, import or do both? Specify your action via this parameter. Most users will want the 'both' option, but this requires network connectivity to both Controllers at once. Use the 2-part export/import functions otherwise.
 
 # Examples
-### Transfer All Configs for All Apps
+Any of the configuration options can be used in combination as you see fit. Here are a few examples.
+
+#### Sync All Configs for All Apps
 ```
 ./config-transfer.sh --application=all --config=all --action=both
 ```
 
-### Export and then Import Actions for All Apps
+#### Export and then Import Actions for All Apps
+This can be useful if you don't have network connectivity, at the same time, to both Controllers. For example, perhaps your AWS security settings prevent access to a SaaS Controller so you need to export the data in an EC2 instance, move the exported file to your laptop, and then import it there.
 ```
 ./config-transfer.sh --application=all --config=actions --action=export
 ./config-transfer.sh --application=all --config=actions --action=import
 ```
 
-### Export and then Import Health Rules for a Single App
+#### Sync Actions for a Single App
+```
+./config-transfer.sh --application=MyApp --config=actions --action=both
+```
+
+#### Separately Export and then Import Health Rules for a Single App
 ```
 ./config-transfer.sh --application=MyApp --config=healthrules --action=export
 ./config-transfer.sh --application=MyApp --config=healthrules --action=import
 ```
 
-### Export and then Import Policies for a Single App
+#### Separately Export and then Import Policies for a Single App
+Same use case as above.
 ```
 ./config-transfer.sh --application=MyApp --config=policies --action=export
 ./config-transfer.sh --application=MyApp --config=policies --action=import
