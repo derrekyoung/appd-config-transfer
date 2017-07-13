@@ -2,12 +2,16 @@
 Bash script to transfer configurations between Controllers. You can export and import Actions, Health Rules, and Policies.
 
 # Installation
-## Permissions
+
+## Important
+The configurations get transferred based on the Application name. This Application must exist in *both* Controllers. It's best to have the agents reporting to the destination Controller, but it might be possible to create the Application manually in the Controller UI without having the agents reporting first. However, certain Health Rules might fail to upload if they rely on BTs that have not yet been registered.
+
+### Permissions
 ```
 chmod u+x config-transfer.sh
 ```
 
-## Update credentials.sh
+### Update credentials.sh
 This file stores all of your Controller access credentials. Update the various fields as appropriate for your Controllers. FYI, many on premises Controllers simply have 'customer1' as the account name.
 
 ```
@@ -21,9 +25,6 @@ DESTINATION_USERNAME="user2"
 DESTINATION_PASSWORD="password2"
 DESTINATION_ACCOUNT="acme-prod"
 ```
-
-## Important
-The configurations get transferred based on the Application name. This Application must exist in *both* Controllers. It's best to have the agents reporting to the destination Controller, but it might be possible to create the Application manually in the Controller UI without having the agents reporting first. However, certain Health Rules might fail to upload if they rely on BTs that have not yet been registered.
 
 # Usage
 `./config-transfer.sh --application=APP_NAME|all --config=actions|healthrules|policies|all --action=export|import|both`
