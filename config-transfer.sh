@@ -35,7 +35,8 @@ fatal()   { echo -e "[FATAL] Line Number: ${BASH_LINENO[*]}   $@" | tee -a "$LOG
 
 usage() {
   echo -e "USAGE: Export, import or transfer Controller configs."
-  echo -e " $0 --application=NAME|all [App name or app ID. Enter all to operate on all Applications]\n"
+  echo -e " $0 --application=NAME|all [App name or app ID. Enter all to operate on all Applications]"
+  echo -e " "
   echo -e " Optional params:"
   echo -e "   --config=actions|healthrules|policies|all [Specify the configurations to export/import]"
   echo -e "   --action=export|import|both [Optional: specify to either export or import a config]"
@@ -60,7 +61,8 @@ prepare() {
   rm -rf "$LOG_FILE"
 
   info "Source:      $SOURCE_USERNAME@$SOURCE_ACCOUNT $SOURCE_URL"
-  info "Destination: $DESTINATION_USERNAME@$DESTINATION_ACCOUNT $DESTINATION_URL\n"
+  info "Destination: $DESTINATION_USERNAME@$DESTINATION_ACCOUNT $DESTINATION_URL"
+  info " "
 }
 
 ################################################################################
