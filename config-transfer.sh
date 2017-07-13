@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-source ./credentials.sh
+source ./private-credentials.sh
 
 #/ Usage:
 #/ Description:
@@ -30,7 +30,7 @@ ACTION=""
 info()    { echo -e "[INFO]    $@" | tee -a "$LOG_FILE" >&2 ; }
 warning() { echo -e "[WARNING] $@" | tee -a "$LOG_FILE" >&2 ; }
 error()   { echo -e "[ERROR]   $@" | tee -a "$LOG_FILE" >&2 ; }
-fatal()   { echo -e "[FATAL] Line Number: ${BASH_LINENO[*]}   $@" | tee -a "$LOG_FILE" >&2 ; exit 1 ; }
+fatal()   { echo -e "[FATAL]   $@" | tee -a "$LOG_FILE" >&2 ; exit 1 ; }
 
 
 usage() {
@@ -54,72 +54,6 @@ main() {
   else
     handle-app "$APP_NAME"
   fi
-}
-
-# Prepare the tmp dir
-prepare() {
-  rm -rf "$LOG_FILE"
-
-  info "Source:      $SOURCE_USERNAME@$SOURCE_ACCOUNT $SOURCE_URL"
-  info "Destination: $DESTINATION_USERNAME@$DESTINATION_ACCOUNT $DESTINATION_URL"
-  info " "
-}
-
-################################################################################
-# Single App
-handle-all-apps() {
-  info "Starting all apps. This may take a while..."
-  info " "
-
-  export-all-source-applications
-  parse-source-applications
-}
-
-export-all-source-applications() {
-  info "Exporting list of apps from $SOURCE_URL$URL_SUFFIX_APPLICATIONS..."
-  curl --user "$SOURCE_USERNAME"@"$SOURCE_ACCOUNT":"$SOURCE_PASSWORD" "$SOURCE_URL$URL_SUFFIX_APPLICATIONS" | tee "$APPS_XML_FILE" | tee -a "$LOG_FILE"
-  echo " "
-}
-
-parse-source-applications() {
-  appNames=($(grep '<name' "$APPS_XML_FILE" | cut -f2 -d">" | cut -f1 -d"<"))
-  info "Found ${#appNames[@]} apps: ${appNames[@]}"
-
-  for appName in "${appNames[@]}"
-  do
-    handle-app "$appName"
-  done
-}
-
-################################################################################
-# Single App
-handle-app() {
-  local appName="$1"
-
-  info "Starting $appName"
-
-  case "$CONFIG_NAME" in
-    actions)
-      handle-app-actions "$appName"
-      ;;
-    healthrules)
-      handle-app-healthrules "$appName"
-      ;;
-    policies)
-      handle-app-policies "$appName"
-      ;;
-    all)
-      # All configs
-      info "All configurations..."
-      handle-app-actions "$appName"
-      handle-app-healthrules "$appName"
-      handle-app-policies "$appName"
-      ;;
-    *)
-      usage
-      fatal "Required: Controller configuration type"
-      ;;
-  esac
 }
 
 # Parse the command line arguments
@@ -165,6 +99,89 @@ parse-args() {
     usage
     fatal "Required: Action to perform"
   fi
+}
+
+# Prepare the tmp dir
+prepare() {
+  rm -rf "$LOG_FILE"
+
+  info "Source:      $SOURCE_USERNAME@$SOURCE_ACCOUNT $SOURCE_URL"
+  info "Destination: $DESTINATION_USERNAME@$DESTINATION_ACCOUNT $DESTINATION_URL"
+  info " "
+}
+
+################################################################################
+# Single App
+handle-all-apps() {
+  info "Starting all apps. This may take a while..."
+  info " "
+
+  if [ "$ACTION" != "import" ]; then
+    export-all-source-applications
+  else
+    info "Skipping application list export"
+  fi
+
+  parse-source-applications #TODO What if no apps found in source-applications?
+}
+
+export-all-source-applications() {
+  info "Exporting list of apps from $SOURCE_URL$URL_SUFFIX_APPLICATIONS..."
+  curl --user "$SOURCE_USERNAME"@"$SOURCE_ACCOUNT":"$SOURCE_PASSWORD" "$SOURCE_URL$URL_SUFFIX_APPLICATIONS" | tee "$APPS_XML_FILE" | tee -a "$LOG_FILE"
+  echo " "
+}
+
+parse-source-applications() {
+  if [ ! -f "$APPS_XML_FILE" ]; then
+    fatal "$APPS_XML_FILE does not exist"
+  fi
+
+  if [ ! -s "$APPS_XML_FILE" ]; then
+    fatal "$APPS_XML_FILE is a blank/empty file"
+  fi
+
+  appNames=($(grep '<name' "$APPS_XML_FILE" | cut -f2 -d">" | cut -f1 -d"<"))
+  info "Found ${#appNames[@]} apps: ${appNames[@]}"
+
+  if [[ -z "${appNames// }" ]]; then
+    fatal "Found zero application names in $APPS_XML_FILE"
+  fi
+
+  for appName in "${appNames[@]}"
+  do
+    handle-app "$appName"
+  done
+}
+
+################################################################################
+# Single App
+handle-app() {
+  local appName="$1"
+
+  info "Starting $appName"
+
+  case "$CONFIG_NAME" in
+    actions)
+      handle-app-actions "$appName"
+      ;;
+    healthrules)
+      handle-app-healthrules "$appName"
+      ;;
+    policies)
+      handle-app-policies "$appName"
+      ;;
+    all)
+      # All configs
+      info "All configurations..."
+      handle-app-actions "$appName"
+      handle-app-healthrules "$appName"
+      handle-app-policies "$appName"
+      ;;
+    *)
+      usage
+      fatal "Required: Controller configuration type"
+      ;;
+  esac
 }
 
 ################################################################################
